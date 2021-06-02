@@ -1,4 +1,4 @@
-FROM debian:latest
+FROM ubuntu:18.04
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -18,7 +18,8 @@ RUN apt-get update \
         libboost-regex-dev \
         libboost-serialization-dev \
         libboost-system-dev \
-        libboost-thread-dev
+        libboost-thread-dev \
+         && apt-get clean
 
 RUN git clone --branch development https://github.com/revbayes/revbayes.git /revbayes
 ENV PATH=$PATH:/revbayes
