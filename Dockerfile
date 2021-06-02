@@ -1,32 +1,33 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        build-essential \
-        ca-certificates \
-        cmake \
-        bash-completion \
-        tar \
-        curl \
-        unzip \
-        git \
-        libboost-all-dev \
-        libboost-dev \
-        libboost-program-options-dev \ 
-        libboost-date-time-dev \
-        libboost-filesystem-dev \
-        libboost-regex-dev \
-        libboost-serialization-dev \
-        libboost-system-dev \
-        libboost-thread-dev \
-         && apt-get clean
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update --fix-missing && \
+  apt-get install -y wget bzip2 build-essential \
+  ca-certificates git libglib2.0-0 libxext6 libsm6 \
+  libxrender1 git mercurial subversion python3-dev && \
+  apt-get clean
 
-RUN git clone --branch development https://github.com/revbayes/revbayes.git /revbayes
-ENV PATH=/revbayes/projects/cmake:$PATH:/revbayes 
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+  /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+  rm ~/miniconda.sh && \
+  /opt/conda/bin/conda clean -tipsy && \
+  ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+  echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+  echo "conda activate base" >> ~/.bashrc && \
+  find /opt/conda/ -follow -type f -name '*.a' -delete && \
+  find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
+  /opt/conda/bin/conda clean -afy
 
-RUN cd /revbayes/projects/cmake \
-        && rm -rf build/ \
-        && ./build.sh\
-        && mv rb /revbayes/rb
 
-ENTRYPOINT ["/revbayes/rb"]
+ENV PATH=/opt/conda/bin:$PATH
+
+COPY environment.yml /var/tmp/environment.yml
+RUN conda env update -f /var/tmp/environment.yml && \
+  rm -rf /var/tmp/environment.yml
+
+COPY entrypoint.sh /opt/conda/bin/entrypoint.sh
+RUN chmod a+x /opt/conda/bin/entrypoint.sh
+
+#ENTRYPOINT ["/opt/conda/bin/entrypoint.sh"]
+CMD [".", "/opt/conda/bin/entrypoint.sh"]

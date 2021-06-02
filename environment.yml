@@ -1,0 +1,8 @@
+name: base
+channels:
+  - anaconda
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - revbayes
