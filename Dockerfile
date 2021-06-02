@@ -22,7 +22,7 @@ RUN apt-get update \
          && apt-get clean
 
 RUN git clone --branch development https://github.com/revbayes/revbayes.git /revbayes
-ENV PATH=$PATH:/revbayes
+ENV PATH=/revbayes/projects/cmake:$PATH:/revbayes 
 
 RUN cd /revbayes/projects/cmake \
         && rm -rf build/ \
